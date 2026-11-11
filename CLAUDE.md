@@ -13,8 +13,8 @@ from the written state, not from memory:
 
 - **`sync`** at the start (`.claude/skills/sync`): pull, read the notes,
   report the next step.
-- **`close`** at the end (`.claude/skills/close`): tests, notes, commit. The
-  user pushes.
+- **`close`** at the end (`.claude/skills/close`): tests, notes, then the
+  git commands for the user. The user commits and pushes from VS Code.
 
 | File | Role |
 |---|---|
@@ -46,13 +46,19 @@ from the written state, not from memory:
   `.venv/Scripts/python.exe -m pytest -q`. On a fresh clone (Windows
   PowerShell): `C:\Users\nicco\anaconda3\python.exe -m venv .venv`, then
   `.venv\Scripts\python.exe -m pip install -r requirements.txt`.
-- Git runs from WSL (Claude) or Git for Windows; `.gitattributes` keeps LF.
+- The user's git is Git for Windows (VS Code); Claude's read-only git runs
+  from WSL. `.gitattributes` keeps LF. `core.filemode` is `false`, because
+  WSL sees every file on `C:` as executable; the `project` launcher gets
+  its executable bit with `git update-index --chmod=+x project`.
 - Sample task sets: `../../tasksets test/` (read-only, outside the repo).
   Own task sets go in `tasksets/custom/`.
 - Do not modify anything outside this repo. The course folders and the
   Obsidian wiki are read-only from here; wiki work happens in a session at
   the vault root.
-- Commit only during `close` or when asked; never push. Remote:
+- **Claude never runs `git add`, `git commit` or `git push`.** It writes
+  the commands (and the message) in the chat; the user commits and pushes
+  from VS Code. Claude only runs read-only git (`status`, `diff`, `log`,
+  `pull`). Remote:
   `origin` = https://github.com/NiccoBene00/rt-scheduler (private), branch
   `main`.
 - Commit messages carry **no AI attribution** (no `Co-Authored-By: Claude`

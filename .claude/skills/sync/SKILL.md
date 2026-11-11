@@ -13,14 +13,16 @@ Run from the repo root (`rt-scheduler/`).
    (diverged or no network), stop and report; never force or rebase on your
    own.
 3. **Read the notes**, in this order:
-   - `notes/status.md` (the snapshot: milestone, last commit, next step),
+   - `notes/status.md` (the snapshot: milestone, next step),
    - the last entry of `notes/journal.md`,
    - in `notes/plan.md`, the section for the current milestone and any
      design point it needs.
-4. **What changed since the last close.** Compare the last commit in
-   `status.md` with `HEAD`: `git log --oneline <last>..HEAD`. If there are
-   commits made outside a session (e.g. the user coded by hand), read
-   `git diff <last>..HEAD` and summarise them.
+4. **What changed since the last close.** Find the last
+   `notes: close session N` commit
+   (`git log --oneline --grep="^notes: close session" -1`) and run
+   `git log --oneline <that>..HEAD`. If there are commits (e.g. the user
+   coded between sessions), read `git diff <that>..HEAD` and summarise
+   them.
 5. **Health check.** If `.venv/` exists and `tests/` has tests:
    `.venv/Scripts/python.exe -m pytest -q`. If `.venv/` is missing (fresh clone),
    say so and offer:
