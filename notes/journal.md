@@ -12,7 +12,9 @@ Each entry: what was done, decisions and why, problems, next step.
   decision order, milestones M0–M8.
 - Created the repo folder, `notes/`, `CLAUDE.md` and the `sync`/`close`
   session commands. Git configured (identity, Windows credential manager),
-  remote `origin` on GitHub (private), first commit.
+  remote `origin` on GitHub (private), first commit and push.
+- Environment: Windows `.venv` from Anaconda Python 3.13.5 with pytest and
+  matplotlib; `.vscode/settings.json` and `launch.json`.
 
 **Decisions**
 - Event-driven simulator: some samples have P ≈ 1.1 M, so stepping one unit
@@ -20,8 +22,24 @@ Each entry: what was done, decisions and why, problems, next step.
 - Exit 5 for invalid input, so it can't be confused with exit 2.
 - Model classified per core after partitioning.
 - No AI attribution line in commits, as in the thesis.
+- Working method: the user types the code. Claude writes one file at a
+  time in the chat, so every line is understood (oral defence). Simple
+  code, no over-engineering.
+- Python on Windows (Anaconda's interpreter), not WSL, as for the thesis
+  scripts. Claude runs the venv from WSL through `.venv/Scripts/python.exe`.
+- `close` commits the work first and then the notes with the hash (no
+  amend, which would change the hash).
 - Dev notes and `.claude/` live in the repo (they travel with git) but are
   left out of the hand-in zip.
 
+**Problems**
+- First push: a stale GitHub login stored in Windows Credential Manager
+  was rejected; erased it, and the browser login then worked.
+- GitHub's EU IPs (140.82.121.x) timed out from the home network (Windows
+  too) while other sites worked; the push went through later.
+- PowerShell: a full path with spaces must be quoted (`& "C:\...\python.exe"`)
+  or replaced by the relative `.venv\Scripts\python.exe`.
+
 **Next**
-- M1 (scaffold).
+- M1 code part: `__init__`, `__main__`, `exit_codes`, `model`,
+  `taskset_io`, `cli` skeleton, `project` launcher, `test_parsing`.
