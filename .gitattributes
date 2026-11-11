@@ -1,0 +1,4 @@
+# LF everywhere: the repo is edited from Windows (VS Code) and WSL
+* text=auto eol=lf
+*.pdf binary
+*.png binary
