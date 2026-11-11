@@ -4,7 +4,6 @@ Rewritten (not appended) at every `close`. History is in `journal.md`.
 
 - **Updated:** 2026-11-11 (close of session 1)
 - **Current milestone:** M1 — Scaffold (environment done, no code yet)
-- **Last commit:** `26c9f2b` Add VS Code config and requirements, switch to a Windows venv
 - **Remote:** `origin` = https://github.com/NiccoBene00/rt-scheduler (private), branch `main`
 - **Tests:** none yet
 

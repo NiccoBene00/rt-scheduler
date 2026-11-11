@@ -27,8 +27,12 @@ Each entry: what was done, decisions and why, problems, next step.
   code, no over-engineering.
 - Python on Windows (Anaconda's interpreter), not WSL, as for the thesis
   scripts. Claude runs the venv from WSL through `.venv/Scripts/python.exe`.
-- `close` commits the work first and then the notes with the hash (no
-  amend, which would change the hash).
+- Git: Claude writes the commands, the user commits and pushes from VS Code
+  (Git for Windows). `close` = tests, notes, commands. `sync` finds the
+  previous session by the `notes: close session N` commit message, so
+  `status.md` no longer stores a hash.
+- `core.filemode false`: WSL git had committed the Windows-created files
+  as executable (100755), which Git for Windows reported as changes.
 - Dev notes and `.claude/` live in the repo (they travel with git) but are
   left out of the hand-in zip.
 
