@@ -1,0 +1,44 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "rtsched: run on a task set",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "rtsched",
+            "cwd": "${workspaceFolder}",
+            "args": ["${input:tasksetFile}", "-a", "${input:algorithm}", "-m", "${input:cores}"],
+            "console": "integratedTerminal",
+            "justMyCode": true
+        },
+        {
+            "name": "Python: current file",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${file}",
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal"
+        }
+    ],
+    "inputs": [
+        {
+            "id": "tasksetFile",
+            "type": "promptString",
+            "description": "Task set file",
+            "default": "../../tasksets test/synchronous/implicit/taskset-0"
+        },
+        {
+            "id": "algorithm",
+            "type": "pickString",
+            "description": "Scheduling algorithm",
+            "options": ["rm", "dm", "edf"],
+            "default": "rm"
+        },
+        {
+            "id": "cores",
+            "type": "promptString",
+            "description": "Number of cores",
+            "default": "1"
+        }
+    ]
+}

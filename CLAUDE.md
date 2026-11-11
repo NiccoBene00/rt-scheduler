@@ -2,7 +2,8 @@
 
 Individual project for INFO-F404 Real-Time Operating Systems (ULB): RM, DM and
 EDF schedulers, feasibility intervals, an event-driven simulator and a
-partitioner for multiprocessor systems. Python 3.12, edited in VS Code. Due
+partitioner for multiprocessor systems. Python 3.13 on **Windows** (Anaconda's
+interpreter, not WSL), edited in VS Code opened natively on Windows. Due
 8 December 2026, 23:59.
 
 ## Sessions
@@ -21,6 +22,16 @@ from the written state, not from memory:
 | `notes/status.md` | snapshot of the current state and the next step (rewritten) |
 | `notes/journal.md` | one entry per session (append only) |
 
+## Working method (agreed 2026-11-11)
+
+- The user types the code. Claude writes each file **in the chat**, one file
+  at a time, and does not create or edit code files itself. The user copies
+  it into VS Code and asks about anything unclear before the next file.
+- Claude still edits `notes/` (during `close`) and runs read-only checks
+  (tests, `git diff`, running the program) to review what the user typed.
+- Keep it simple: no over-engineering, just code that works and is easy to
+  explain at the oral defence.
+
 ## Rules
 
 - Follow the statement (`../../project-description.pdf`) and `notes/plan.md`.
@@ -30,7 +41,12 @@ from the written state, not from memory:
   guide numbering) in the docstring of each analysis function.
 - Deterministic code: explicit tie-breaks, no unordered iteration that
   affects results, every loop bounded.
-- Run Python through `.venv/bin/python`. Tests: `.venv/bin/python -m pytest -q`.
+- `.venv/` is a **Windows** venv created from `C:\Users\nicco\anaconda3\python.exe`.
+  From WSL, run it through interop: `.venv/Scripts/python.exe`. Tests:
+  `.venv/Scripts/python.exe -m pytest -q`. On a fresh clone (Windows
+  PowerShell): `C:\Users\nicco\anaconda3\python.exe -m venv .venv`, then
+  `.venv\Scripts\python.exe -m pip install -r requirements.txt`.
+- Git runs from WSL (Claude) or Git for Windows; `.gitattributes` keeps LF.
 - Sample task sets: `../../tasksets test/` (read-only, outside the repo).
   Own task sets go in `tasksets/custom/`.
 - Do not modify anything outside this repo. The course folders and the

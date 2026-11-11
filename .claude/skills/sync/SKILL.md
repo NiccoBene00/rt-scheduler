@@ -22,9 +22,10 @@ Run from the repo root (`rt-scheduler/`).
    commits made outside a session (e.g. the user coded by hand), read
    `git diff <last>..HEAD` and summarise them.
 5. **Health check.** If `.venv/` exists and `tests/` has tests:
-   `.venv/bin/python -m pytest -q`. If `.venv/` is missing (fresh clone),
+   `.venv/Scripts/python.exe -m pytest -q`. If `.venv/` is missing (fresh clone),
    say so and offer:
-   `python3 -m venv .venv && .venv/bin/pip install -r requirements.txt`.
+   in Windows PowerShell, `C:\Users\nicco\anaconda3\python.exe -m venv .venv`
+   then `.venv\Scripts\python.exe -m pip install -r requirements.txt`.
 6. **Report** in a few lines:
    - pull result and new commits, if any,
    - current milestone and what is done,

@@ -7,7 +7,7 @@ description: End a work session on the INFO-F404 scheduler project. Runs the tes
 
 Run from the repo root (`rt-scheduler/`).
 
-1. **Tests.** `.venv/bin/python -m pytest -q` (if there are tests). Record
+1. **Tests.** `.venv/Scripts/python.exe -m pytest -q` (if there are tests). Record
    the result as it is; if tests fail, say so and note it as a blocker, do
    not hide it.
 2. **`notes/status.md`** — rewrite it as a snapshot, keeping its layout:
@@ -22,11 +22,14 @@ Run from the repo root (`rt-scheduler/`).
    changed this session, update the design section (the reason goes in
    the journal).
 5. **Show** `git status --short` and a short summary of the diff.
-6. **Commit.** Stage the session's changes (never `.venv`, caches, build
-   output or `*.zip`). One commit per logical change when they are
-   clearly separate, otherwise one commit. Message: imperative title, a
-   few bullets, no `Co-Authored-By` or other AI attribution line. Then put the short hash in `status.md` → "Last commit" and
-   amend that change in (or commit it as `notes: update status`).
+6. **Commit**, in two steps:
+   - First the work: stage the session's code and config changes (never
+     `.venv`, caches, build output or `*.zip`), one commit per logical
+     change when clearly separate. Message: imperative title, a few
+     bullets, no `Co-Authored-By` or other AI attribution line.
+   - Then the notes: write that commit's short hash in `status.md` →
+     "Last commit", and commit `notes/` as `notes: close session N`.
+     (Never amend to insert a hash: amending changes the hash.)
 7. **Hand over the push.** Do not push. Tell the user to run `git push`
    (in the Claude prompt: `! git push`).
 8. If a decision is worth keeping in the Obsidian wiki, suggest `/save`
