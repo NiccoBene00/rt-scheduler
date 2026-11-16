@@ -47,3 +47,39 @@ Each entry: what was done, decisions and why, problems, next step.
 **Next**
 - M1 code part: `__init__`, `__main__`, `exit_codes`, `model`,
   `taskset_io`, `cli` skeleton, `project` launcher, `test_parsing`.
+
+## 2026-11-16 — Session 2: M1 scaffold
+
+**Done**
+- Wrote M1 file by file (Claude in the chat, user typing in VS Code):
+  `rtsched/__init__.py`, `__main__.py`, `exit_codes.py`, `model.py`,
+  `taskset_io.py`, `cli.py` (skeleton), `project` launcher,
+  `tests/test_parsing.py`. 16 tests pass.
+- Checked the CLI by hand: valid file → 0, bad `-a` and missing file → 5,
+  `--help` works.
+
+**Decisions**
+- `Fraction` for utilisations: exact, so `U <= 1` is never wrong by a
+  rounding error at U = 1.
+- `Task.index` (line order, blank lines not counted) is the RM/DM tie-break,
+  kept on every core after partitioning.
+- Synchronous = all offsets equal (not necessarily 0); the shift is handled
+  in `feasibility.py`.
+- C > D and U > 1 are valid input; the analysis rejects them (exit 3), not
+  the parser (exit 5).
+- argparse subclass whose `error()` exits 5 instead of 2; `add_help=False`
+  and a manual `--help`, because the statement uses `-h` for the heuristic.
+- `main(argv)` returns the exit code instead of exiting, so tests can call
+  it; `__main__.py` and `project` call `sys.exit(main())`.
+- `pytest.ini` with `pythonpath = .` so plain `pytest` (VS Code Testing
+  panel) finds `rtsched`.
+
+**Problems**
+- `sync` was first called from the course folder, where the skill is not
+  loaded; sessions must open in `rt-scheduler/`.
+- `pytest.ini` was not created yet at close (tests pass through
+  `python -m pytest`).
+
+**Next**
+- M2: `analysis.py` (hyperperiod, busy period, S_n, RTA) and
+  `tests/test_analysis.py`.

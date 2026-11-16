@@ -122,8 +122,9 @@ core that is not schedulable.
 ## 4. Milestones
 
 - [x] M0 — Plan, repo, notes, session workflow (2026-11-11)
-- [ ] M1 — Scaffold: package, parsing, model and classification, exit codes,
+- [x] M1 — Scaffold: package, parsing, model and classification, exit codes,
       CLI skeleton, venv (Windows, Anaconda Python 3.13), VS Code config
+      (2026-11-16)
 - [ ] M2 — `analysis.py` + tests against the guide's examples
 - [ ] M3 — RM/DM/EDF priority functions, feasibility table, unsupported
       messages
