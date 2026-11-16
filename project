@@ -1,0 +1,8 @@
+#!/usr/bin/env python3
+"""Launcher so that the program runs as `./project <task_file> -a rm ...`."""
+
+import sys
+
+from rtsched.cli import main
+
+sys.exit(main())
