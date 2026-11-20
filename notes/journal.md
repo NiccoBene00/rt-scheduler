@@ -83,3 +83,34 @@ Each entry: what was done, decisions and why, problems, next step.
 **Next**
 - M2: `analysis.py` (hyperperiod, busy period, S_n, RTA) and
   `tests/test_analysis.py`.
+
+## 2026-11-20 — Session 3: M2 analysis
+
+**Done**
+- Wrote `rtsched/analysis.py` function by function (Claude in the chat,
+  user typing in VS Code): `ceil_div`, `hyperperiod`, `busy_period`,
+  `s_n`, `response_times`, `liu_layland_bound`. Each was checked by hand in
+  the terminal before the next one.
+- Wrote `tests/test_analysis.py` (18 tests) against the curriculum guide:
+  system 30 (r_3 = 15), system 47 (S_3 = 4, P = 240 → [0, 244)), system
+  108 under RM and system 110 under DM (both `[1, 3, 4, 14]`). 34 tests pass.
+- `pytest.ini` turned out to be committed already.
+
+**Decisions**
+- Analysis functions take `list[Task]`, not `TaskSet`, so they also run on
+  one core's tasks after partitioning.
+- `ceil_div(a, b) = -(-a // b)`: exact integer ceiling, no float division.
+- `busy_period` raises `ValueError` when U > 1: the loop is only bounded
+  (by P) when U ≤ 1, so misuse becomes an error, not an infinite loop.
+- `response_times` follows the guide's Eq. 3.2: start from w_0 = C_i, stop
+  at the fixed point or when w > D_i, and return `None` for that task
+  (exact value not needed, Th. 29 only needs r_i ≤ D_i).
+- `s_n` and `response_times` expect tasks already sorted by decreasing
+  priority; sorting belongs to the scheduler (M3).
+- `liu_layland_bound` returns a float (2^(1/n) is irrational); it is only
+  a sufficient test, kept for the report, not used for exit codes.
+- Theorem numbers checked in the guide: RTA = Th. 29, LL = Th. 33,
+  [0, S_n + P) = Th. 45 / Cor. 46.
+
+**Next**
+- M3: scheduler priority functions, `feasibility.py`, `tests/test_feasibility.py`.

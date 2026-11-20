@@ -2,10 +2,10 @@
 
 Rewritten (not appended) at every `close`. History is in `journal.md`.
 
-- **Updated:** 2026-11-16 (close of session 2)
-- **Current milestone:** M2 — `analysis.py` (not started). M1 done.
+- **Updated:** 2026-11-20 (close of session 3)
+- **Current milestone:** M3 — priority functions and `feasibility.py` (not started). M2 done.
 - **Remote:** `origin` = https://github.com/NiccoBene00/rt-scheduler (private), branch `main`
-- **Tests:** 16 passed (`tests/test_parsing.py`)
+- **Tests:** 34 passed (16 `tests/test_parsing.py`, 18 `tests/test_analysis.py`)
 
 ## Done
 
@@ -13,7 +13,8 @@ Rewritten (not appended) at every `close`. History is in `journal.md`.
 - M1: Windows `.venv` (Anaconda Python 3.13.5), VS Code config,
   `rtsched/` package (`__init__`, `__main__`, `exit_codes`, `model`,
   `taskset_io`, `cli` skeleton), `project` launcher (staged as 100755),
-  `tests/test_parsing.py`.
+  `tests/test_parsing.py`, `pytest.ini`.
+- M2: `rtsched/analysis.py` and `tests/test_analysis.py`.
 
 ## Code state
 
@@ -23,7 +24,7 @@ Rewritten (not appended) at every `close`. History is in `journal.md`.
 | model | done: `Task` (frozen, `index` for ties, `utilization()` as `Fraction`, `release_time(k)`), `Job` (`release`, `remaining`, `deadline` property), `TaskSet` (`utilization`, `is_synchronous` = all offsets equal, `deadline_type`, `describe`) |
 | taskset_io | done: `read_taskset`, `parse_line`, `InvalidTaskFile`; utf-8-sig, blank lines skipped; C > D accepted (analysis rejects it) |
 | cli | skeleton: argparse subclass exits 5 on errors, `add_help=False` + `--help` (since `-h` = heuristic), `positive_int` for `-m`; `main(argv)` returns the code; prints the classification and returns 0 (TODO M3–M5) |
-| analysis | — |
+| analysis | done: all functions take `list[Task]`. `ceil_div` (integer ceiling), `hyperperiod` (`math.lcm`), `busy_period` (Th. 40/58, from Σ C_i, `ValueError` if U > 1), `s_n` (Th. 45 / Cor. 46, tasks in priority order), `response_times` (Th. 29, Eq. 3.1–3.2, from w_0 = C_i, `None` when w > D_i; tasks in priority order), `liu_layland_bound` (Th. 33, float, report only) |
 | schedulers (rm, dm, edf) | — |
 | feasibility, schedulability | — |
 | simulator | — |
@@ -33,28 +34,25 @@ Rewritten (not appended) at every `close`. History is in `journal.md`.
 
 ## Next step
 
-1. Check that `pytest.ini` exists in the repo root (it was missing at
-   close: `[pytest]`, `testpaths = tests`, `pythonpath = .`). Tests pass
-   anyway with `python -m pytest`.
-2. M2: `rtsched/analysis.py`, one function at a time, each with the theorem
-   in its docstring:
-   - `hyperperiod(tasks)`: P = lcm of the periods.
-   - `busy_period(tasks)`: smallest positive fixed point of
-     w = Σ ⌈w/T_i⌉ C_i from w0 = Σ C_i (λ_n for FTP, L for EDF; Th. 40, 58).
-     Only called when U ≤ 1, so it terminates.
-   - `s_n(tasks)` for tasks in decreasing priority order: S_1 = O_1,
-     S_i = O_i + ⌈(S_{i-1} − O_i)^+ / T_i⌉ T_i (Th. 45).
-   - `response_times(tasks)` (RTA, tasks in priority order, constrained
-     deadlines): R_i = C_i + Σ_{j<i} ⌈R_i/T_j⌉ C_j, stop when R_i > D_i.
-   - `liu_layland_bound(n)`: n(2^{1/n} − 1) (optional, for the report).
-   Then `tests/test_analysis.py` against the curriculum guide's examples
-   (system 47: S_3 = 4, P = 240 → [0, 244); systems 108–110 for RTA).
-3. Then M3: schedulers (priority functions) and `feasibility.py`.
+M3, one file at a time (Claude writes in the chat, the user types):
+
+1. `rtsched/schedulers/` (`base.py`, `rm.py`, `dm.py`, `edf.py`): priority
+   keys from plan §3: RM (T, index), DM (D, index), EDF (absolute deadline,
+   index, release); jobs of one task FIFO. FTP schedulers also need a
+   function that sorts a `list[Task]` in decreasing priority, for `s_n` and
+   `response_times`.
+2. `rtsched/feasibility.py`: the decision table of plan §3 → interval
+   `(start, end)` or `Unsupported(reason)`; handles the shift for
+   synchronous sets with equal non-zero offsets.
+3. `tests/test_feasibility.py`: system 47 under RM → [0, 244); system 110
+   given in the guide's order, sorted by DM → RTA `[1, 3, 4, 14]`.
+4. Then M4: simulator and `schedulability.py`.
 
 ## Open questions / blockers
 
 - TA: exit 2 for RM/DM on asynchronous arbitrary sets?
-- Behind the plan's target (M1–M4 by 20 Nov): M1 done on 16 Nov.
+- Behind the plan's target (M1–M4 by 20 Nov): M2 done on 20 Nov; M3–M4
+  must catch up before the M5–M6 target of 27 Nov.
 - Network: GitHub's EU servers (140.82.121.x) are sometimes unreachable
   from the home network; if a push hangs, push from another network or
   retry later.

@@ -87,7 +87,8 @@ that use them are skipped when the folder is not found.
 
 λ_n and L: smallest positive fixed point of w = Σ ⌈w / T_i⌉ C_i, starting
 from Σ C_i. S_1 = O_1, S_i = O_i + ⌈(S_{i-1} − O_i)^+ / T_i⌉ T_i in
-decreasing priority order. Theory: guide Cor. 32, Th. 39–40, 44–45, 54, 58,
+decreasing priority order. Theory: guide Th. 29 (RTA), Cor. 32, Th. 33 (LL),
+Th. 39–40, 44–45, Cor. 46, 54, 58,
 61–63.
 
 ### Decision order (`schedulability.py`)
@@ -125,7 +126,7 @@ core that is not schedulable.
 - [x] M1 — Scaffold: package, parsing, model and classification, exit codes,
       CLI skeleton, venv (Windows, Anaconda Python 3.13), VS Code config
       (2026-11-16)
-- [ ] M2 — `analysis.py` + tests against the guide's examples
+- [x] M2 — `analysis.py` + tests against the guide's examples (2026-11-20)
 - [ ] M3 — RM/DM/EDF priority functions, feasibility table, unsupported
       messages
 - [ ] M4 — Simulator + `schedulability.py` (uniprocessor complete)
