@@ -104,6 +104,13 @@ offset = O > 0 get the interval shifted by O.
 3. An exact or sufficient test applies → 0 (or 3 when the test is exact).
 4. Otherwise simulate → 0 or 4.
 
+Step 1 is `feasibility.check_supported`, run before step 2 so that
+`busy_period` never sees U > 1. Step 3: EDF implicit → 0 (Cor. 54); FTP
+constrained → synchronous RTA (Th. 29), exact for synchronous sets (0 or
+3), sufficient for asynchronous ones (Lemma 25: passing → 0, failing →
+simulate). The CLI prints one line `<verdict>: <reason>` (tasks numbered
+from 1, τ1 = first line).
+
 ### Simulator
 
 Event-driven: jump to the next release, completion or deadline instead of
@@ -135,7 +142,8 @@ core that is not schedulable.
 - [x] M2 — `analysis.py` + tests against the guide's examples (2026-11-20)
 - [x] M3 — RM/DM/EDF priority functions, feasibility table, unsupported
       messages (2026-11-20)
-- [ ] M4 — Simulator + `schedulability.py` (uniprocessor complete)
+- [x] M4 — Simulator + `schedulability.py` (uniprocessor complete)
+      (2026-11-20)
 - [ ] M5 — Partitioner + multiprocessor flow
 - [ ] M6 — Custom task sets, `expected.csv`, `run_all.py` over the 60 samples
 - [ ] M7 — Bonus visualisation (`--plot`, extra flag)

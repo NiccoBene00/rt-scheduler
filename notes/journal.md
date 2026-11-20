@@ -152,3 +152,44 @@ Each entry: what was done, decisions and why, problems, next step.
 **Next**
 - M4: type `simulator.py`, then `test_simulator.py`, `schedulability.py`
   and the one-core CLI flow.
+
+## 2026-11-20 — Session 5: M4 simulator and one-core program
+
+**Done**
+- `rtsched/simulator.py`, `tests/test_simulator.py` (8 tests).
+- `feasibility.check_supported` split out of `feasibility_interval`.
+- `rtsched/schedulability.py`, `tests/test_schedulability.py` (13 tests).
+- One-core flow in `cli.main` (`VERDICTS`, `-m > 1` guard until M5),
+  `tests/test_cli.py` (7 tests). 76 tests pass.
+- Smoke run of the CLI on all 60 samples × rm/dm/edf, from a scratch copy:
+  no crash, every run < 2 s, every RM/DM-schedulable set is
+  EDF-schedulable, RM = DM on implicit sets. Checked by hand:
+  `asynchronous/constrained/taskset-1` → 0 by simulation on [0, 350),
+  `taskset-2` → 4.
+
+**Decisions**
+- Event-driven simulator: next event = min(completion of the running job,
+  next release before `end`, deadlines of ready jobs); misses checked
+  before releases, so finishing exactly at the deadline meets it. Returns
+  the first missed `Job` (for messages and the bonus Gantt chart).
+- `check_supported` runs first in `schedulability.py`, before the C > D /
+  U > 1 check, so the plan's order holds and `busy_period` never sees
+  U > 1.
+- Step 3 of the decision order: EDF implicit → 0 (Cor. 54); FTP
+  constrained → synchronous RTA, exact for synchronous sets (Th. 29),
+  sufficient for asynchronous sets (Lemma 25, critical instant), else
+  simulation.
+- `check_schedulability` returns `(code, reason)`; the CLI prints one line
+  `<verdict>: <reason>`, tasks numbered from 1 (τ1 = first task).
+- `-m > 1` returns 5 until M5, so a multi-core run is never reported as
+  schedulable without being checked.
+
+**Problems**
+- A leftover nested `if scheduler.fixed_task_priority:` in
+  `feasibility.py` after the refactor; removed.
+- Claude's sample command used a placeholder (`<a file>`); give real paths.
+- Running the Windows venv from WSL on a scratch copy needs Windows paths
+  (`wslpath -w`).
+
+**Next**
+- M5: `partitioner.py`, `test_partitioner.py`, multi-core flow in the CLI.

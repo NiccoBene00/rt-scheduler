@@ -2,10 +2,10 @@
 
 Rewritten (not appended) at every `close`. History is in `journal.md`.
 
-- **Updated:** 2026-11-20 (close of session 4)
-- **Current milestone:** M4 — simulator + `schedulability.py` (not started in code). M3 done.
+- **Updated:** 2026-11-20 (close of session 5)
+- **Current milestone:** M5 — partitioner + multiprocessor flow (not started). M4 done: the one-core program is complete.
 - **Remote:** `origin` = https://github.com/NiccoBene00/rt-scheduler (private), branch `main`
-- **Tests:** 48 passed (16 `test_parsing`, 18 `test_analysis`, 14 `test_feasibility`)
+- **Tests:** 76 passed (16 parsing, 18 analysis, 14 feasibility, 8 simulator, 13 schedulability, 7 cli)
 
 ## Done
 
@@ -17,6 +17,11 @@ Rewritten (not appended) at every `close`. History is in `journal.md`.
 - M2: `rtsched/analysis.py` and `tests/test_analysis.py`.
 - M3: `rtsched/schedulers/` (base, rm, dm, edf, registry),
   `rtsched/feasibility.py`, `tests/test_feasibility.py`.
+- M4: `rtsched/simulator.py`, `rtsched/schedulability.py`, one-core flow in
+  `cli.main`, `tests/test_simulator.py`, `test_schedulability.py`,
+  `test_cli.py`. Smoke run on all 60 samples × rm/dm/edf (from a scratch
+  copy): no crash, every run < 2 s, RM/DM-schedulable ⇒ EDF-schedulable,
+  RM = DM on implicit sets.
 
 ## Code state
 
@@ -25,45 +30,41 @@ Rewritten (not appended) at every `close`. History is in `journal.md`.
 | exit_codes | done: 0–4 from the statement, 5 = invalid input |
 | model | done: `Task` (frozen, `index` for ties, `utilization()` as `Fraction`, `release_time(k)`), `Job` (`release`, `remaining`, `deadline` property), `TaskSet` (`utilization`, `is_synchronous` = all offsets equal, `deadline_type`, `describe`) |
 | taskset_io | done: `read_taskset`, `parse_line`, `InvalidTaskFile`; utf-8-sig, blank lines skipped; C > D accepted (analysis rejects it) |
-| cli | skeleton: argparse subclass exits 5 on errors, `add_help=False` + `--help` (since `-h` = heuristic), `positive_int` for `-m`; `main(argv)` returns the code; prints the classification and returns 0 (TODO M4–M5) |
+| cli | one core done: `VERDICTS` table, `main` = read → `get_scheduler` → `check_schedulability` → print `<verdict>: <reason>` → return code. `-m > 1` returns 5 with "not implemented yet" (TODO M5) |
 | analysis | done: all take `list[Task]`. `ceil_div`, `hyperperiod`, `busy_period` (Th. 40/58, `ValueError` if U > 1), `s_n` (Th. 45 / Cor. 46), `response_times` (Th. 29, `None` when w > D_i), `liu_layland_bound` (Th. 33). `s_n` and `response_times` need tasks in priority order |
-| schedulers | done: `Scheduler` (`job_key`, `pick` = min key, `fixed_task_priority`), `FixedTaskPriority` (`task_key`, `sort_tasks`, job key = task key + release → FIFO per task). RM (T, index), DM (D, index), EDF (abs. deadline, index, release). `get_scheduler(name)` / `SCHEDULERS` in `__init__` |
-| feasibility | done: `feasibility_interval(tasks, scheduler) -> (start, end)`, `Unsupported` (FTP + async + arbitrary). Sync FTP constrained [0, min(D_max, λ_n)), sync FTP arbitrary [0, λ_n), sync EDF [0, L) (Cor. 59), async FTP [0, S_n + P) with RM/DM order, async EDF [0, O_max + 2P); sync shifted by the common offset. Requires U ≤ 1 |
-| simulator | designed, code given in chat (session 4), not typed yet |
-| schedulability | — |
+| schedulers | done: `Scheduler` (`job_key`, `pick` = min key, `fixed_task_priority`), `FixedTaskPriority` (`task_key`, `sort_tasks`, job key = task key + release). RM (T, index), DM (D, index), EDF (abs. deadline, index, release). `get_scheduler(name)` |
+| feasibility | done: `check_supported` (raises `Unsupported` for FTP + async + arbitrary), `feasibility_interval(tasks, scheduler) -> (start, end)` (calls `check_supported` first). Requires U ≤ 1 |
+| simulator | done: `simulate(tasks, scheduler, start, end) -> Job | None`, event-driven (release / completion / deadline), releases only before `end`, jobs followed to completion, first miss by (deadline, index) |
+| schedulability | done: `check_schedulability(tasks, scheduler) -> (code, reason)`: unsupported → 2; C > D or U > 1 → 3; EDF implicit → 0 (Cor. 54); FTP constrained → sync RTA (exact if sync, sufficient if async, Lemma 25); else simulate → 0/4 |
 | partitioner | — |
 | visualization (bonus) | — |
 | report | — |
 
 ## Next step
 
-M4, one file at a time:
+M5, one file at a time (Claude writes in the chat, the user types):
 
-1. `rtsched/simulator.py`: the code was given in the chat at the end of
-   session 4. Ask Claude to repeat it if needed. Design:
-   `simulate(tasks, scheduler, start, end) -> Job | None` (first missed job).
-   Loop: (1) misses = ready jobs with deadline ≤ t → return the min by
-   (deadline, index); (2) release jobs with next_release == t < end;
-   (3) idle → jump to the next release < end or return None; (4) run
-   `scheduler.pick(ready)` until min(t + remaining, next release < end,
-   ready deadlines); subtract; remove when remaining == 0.
-   Check: system 30 under RM on [0, 15) → None; with D_3 = 14 on [0, 14) →
-   the job of τ3 (index 2, release 0, deadline 14, remaining 1).
-2. `tests/test_simulator.py`.
-3. `rtsched/schedulability.py` (plan §3 decision order). `feasibility_interval`
-   raises `ValueError` from `busy_period` when U > 1, so check C > D / U > 1
-   (exit 3) before computing it; `Unsupported` only occurs for async sets,
-   which never call `busy_period`, so "unsupported first" still holds.
-   Shortcuts: sync FTP constrained → RTA (exact, 0 or 3); async FTP
-   constrained → sync RTA passes → 0; EDF implicit → U ≤ 1 → 0.
-4. Wire `cli.main` for one core (print the reason for exit 2, the missed
-   job for exit 4), then `tests/test_cli.py`.
+1. Read plan §3 "Partitioner" and the statement's partitioning section
+   (`../../project-description.pdf`) again before writing.
+2. `rtsched/partitioner.py`: sort tasks by utilisation (`du` decreasing /
+   `iu` increasing, ties by index), then FF / NF / BF / WF with capacity 1
+   per core (U_core + U_i ≤ 1, exact `Fraction`). BF = eligible core with
+   the highest load, WF = lowest, ties to the lowest core index; NF never
+   returns to earlier cores. Returns the list of tasks per core, or None
+   when a task fits nowhere (exit 1). Keep `Task.index` unchanged per core.
+3. `tests/test_partitioner.py` (one case per heuristic where they differ).
+4. `cli.main`: replace the `-m > 1` guard: partition (fail → 1), then
+   `check_schedulability` per core in order, stop at the first core that
+   is not 0; print which core. Decide with the user how to combine codes
+   (e.g. core 1 unsupported, core 2 schedulable). Extend `test_cli.py`.
+5. Then M6: custom task sets, `expected.csv`, `scripts/run_all.py`.
 
 ## Open questions / blockers
 
 - TA: exit 2 for RM/DM on asynchronous arbitrary sets?
-- Behind the plan's target (M1–M4 by 20 Nov): M3 done on 20 Nov; M4 must
-  be done quickly to keep the M5–M6 target of 27 Nov.
+- Multiprocessor: which exit code when cores give different results (first
+  failing core in order, per plan §3)? Confirm while writing M5.
+- Plan target: M5–M6 by 27 Nov (M1–M4 met on 20 Nov).
 - Network: GitHub's EU servers (140.82.121.x) are sometimes unreachable
   from the home network; if a push hangs, push from another network or
   retry later.
