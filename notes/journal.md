@@ -114,3 +114,41 @@ Each entry: what was done, decisions and why, problems, next step.
 
 **Next**
 - M3: scheduler priority functions, `feasibility.py`, `tests/test_feasibility.py`.
+
+## 2026-11-20 — Session 4: M3 schedulers and feasibility intervals
+
+**Done**
+- Wrote `rtsched/schedulers/` (`base.py`, `rm.py`, `dm.py`, `edf.py`,
+  `__init__.py` with `get_scheduler`), `rtsched/feasibility.py` and
+  `tests/test_feasibility.py` (14 tests). 48 tests pass.
+- Gave the design and code of `simulator.py` in the chat (not typed yet).
+
+**Decisions**
+- Priority as a key tuple, smallest = highest: one `min` for every
+  scheduler, ties visible in the key, keys unique (task index + release),
+  so `pick` is deterministic whatever the list order.
+- `FixedTaskPriority` subclasses define only `task_key`; the job key is
+  task key + release (FIFO between jobs of one task, for arbitrary
+  deadlines) and `sort_tasks` gives the order `s_n` / `response_times` need.
+  EDF subclasses `Scheduler` directly (priority per job, no task order).
+- `feasibility.py` returns only the interval, for every supported
+  combination; the no-simulation shortcuts go in `schedulability.py`.
+- Sync FTP constrained: [0, min(D_max, λ_n)), because the statement asks
+  for the smallest interval and both Cor. 32 and Th. 40 apply.
+- `Unsupported` is an exception with the reason; the CLI will turn it into
+  exit 2.
+- Theorem numbers checked in the guide: RM optimality Th. 28, DM Th. 35,
+  EDF Def. 12 and Th. 52, [0, L) is Cor. 59 (Th. 58 is the idle-point
+  property).
+
+**Problems**
+- Claude's expected interval for system 47 under RM was wrong (244): the
+  guide's 244 uses the order τ1 ≻ τ2 ≻ τ3, while RM gives τ1 ≻ τ3 ≻ τ2,
+  so S_n = 16 and the interval is [0, 256). The code was right; the test
+  uses 256 and explains why.
+- Claude miscounted the expected number of tests in session 3 (37 instead
+  of 34); counts are now checked by running the tests.
+
+**Next**
+- M4: type `simulator.py`, then `test_simulator.py`, `schedulability.py`
+  and the one-core CLI flow.

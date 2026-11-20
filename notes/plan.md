@@ -88,8 +88,14 @@ that use them are skipped when the folder is not found.
 λ_n and L: smallest positive fixed point of w = Σ ⌈w / T_i⌉ C_i, starting
 from Σ C_i. S_1 = O_1, S_i = O_i + ⌈(S_{i-1} − O_i)^+ / T_i⌉ T_i in
 decreasing priority order. Theory: guide Th. 29 (RTA), Cor. 32, Th. 33 (LL),
-Th. 39–40, 44–45, Cor. 46, 54, 58,
-61–63.
+Th. 39–40, 44–45, Cor. 46, 54, 58, Cor. 59, 61–63.
+
+`feasibility.py` returns the interval for every supported combination (the
+statement's "feasibility interval" feature); the shortcuts without
+simulation in the table above belong to `schedulability.py`. Sync FTP with
+constrained deadlines uses [0, min(D_max, λ_n)) (Cor. 32 and Th. 40 are
+both feasibility intervals, the smaller one is kept). Sync sets with every
+offset = O > 0 get the interval shifted by O.
 
 ### Decision order (`schedulability.py`)
 
@@ -127,8 +133,8 @@ core that is not schedulable.
       CLI skeleton, venv (Windows, Anaconda Python 3.13), VS Code config
       (2026-11-16)
 - [x] M2 — `analysis.py` + tests against the guide's examples (2026-11-20)
-- [ ] M3 — RM/DM/EDF priority functions, feasibility table, unsupported
-      messages
+- [x] M3 — RM/DM/EDF priority functions, feasibility table, unsupported
+      messages (2026-11-20)
 - [ ] M4 — Simulator + `schedulability.py` (uniprocessor complete)
 - [ ] M5 — Partitioner + multiprocessor flow
 - [ ] M6 — Custom task sets, `expected.csv`, `run_all.py` over the 60 samples
