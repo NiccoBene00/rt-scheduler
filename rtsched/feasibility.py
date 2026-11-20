@@ -14,6 +14,19 @@ class Unsupported(Exception):
     """No feasibility interval is known for this combination (exit 2)."""
 
 
+def check_supported(tasks: list[Task], scheduler: Scheduler) -> None:
+    """Raise Unsupported when no feasibility interval is known: an FTP
+    scheduler on an asynchronous set with arbitrary deadlines (Th. 44, 45
+    and Cor. 46 need constrained deadlines)."""
+    taskset = TaskSet(tasks)
+    if (scheduler.fixed_task_priority and not taskset.is_synchronous()
+            and taskset.deadline_type() == ARBITRARY):
+        raise Unsupported(
+            f"{scheduler.name.upper()} on an asynchronous task set with arbitrary deadlines: "
+            "the curriculum guide gives no feasibility interval for fixed task priority "
+            "schedulers in this case (Th. 44, 45 and Cor. 46 need constrained deadlines)"
+        )
+
 def feasibility_interval(tasks: list[Task], scheduler: Scheduler) -> tuple[int, int]:
     """The smallest known feasibility interval, as (start, end).
 
@@ -37,6 +50,7 @@ def feasibility_interval(tasks: list[Task], scheduler: Scheduler) -> tuple[int, 
         - tasks[0].offset: in a synchronous set every offset is the same, so the first one is enough.
     """
     taskset = TaskSet(tasks)
+    check_supported(tasks, scheduler)
     arbitrary = taskset.deadline_type() == ARBITRARY
 
     if taskset.is_synchronous():
@@ -47,12 +61,6 @@ def feasibility_interval(tasks: list[Task], scheduler: Scheduler) -> tuple[int, 
         return (start, start + length)
 
     if scheduler.fixed_task_priority:
-        if arbitrary:
-            raise Unsupported(
-                f"{scheduler.name.upper()} on an asynchronous task set with arbitrary deadlines: "
-                "the curriculum guide gives no feasibility interval for fixed task priority "
-                "schedulers in this case (Th. 44, 45 and Cor. 46 need constrained deadlines)"
-            )
         return (0, s_n(scheduler.sort_tasks(tasks)) + hyperperiod(tasks))
 
     o_max = max(task.offset for task in tasks)

@@ -7,9 +7,24 @@ Section 4.1 of the project description.
 import argparse
 import sys
 
-from rtsched.exit_codes import INVALID_INPUT, SCHEDULABLE
+from rtsched.exit_codes import (
+    INVALID_INPUT,
+    NOT_SCHEDULABLE_ANALYSIS,
+    NOT_SCHEDULABLE_SIMULATION,
+    SCHEDULABLE,
+    UNSUPPORTED,
+)
+from rtsched.schedulability import check_schedulability
+from rtsched.schedulers import get_scheduler
 from rtsched.taskset_io import InvalidTaskFile, read_taskset
 
+# What each exit code means, printed before the reason.
+VERDICTS = {
+    SCHEDULABLE: "schedulable",
+    UNSUPPORTED: "unsupported",
+    NOT_SCHEDULABLE_ANALYSIS: "not schedulable (without simulation)",
+    NOT_SCHEDULABLE_SIMULATION: "not schedulable (simulation)",
+}
 
 class ArgumentParser(argparse.ArgumentParser):
     """argparse generally exits with code 2 on bad arguments, which would mean
@@ -66,7 +81,11 @@ def main(argv=None) -> int:
     print(f"{len(taskset.tasks)} tasks, {taskset.describe()}, U = {float(taskset.utilization()):.3f}")
     print(f"algorithm {args.algorithm}, {args.cores} core(s), heuristic {args.heuristic}, sort {args.sort}")
 
-    # TODO (M3-M5): partitioning, feasibility interval, schedulability.
-    return SCHEDULABLE
+    if args.cores > 1:
+        # TODO (M5): partition the tasks, then check every core.
+        print("error: -m > 1 is not implemented yet", file=sys.stderr)
+        return INVALID_INPUT
 
-
+    code, reason = check_schedulability(taskset.tasks, get_scheduler(args.algorithm))
+    print(f"{VERDICTS[code]}: {reason}")
+    return code
