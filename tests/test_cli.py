@@ -36,3 +36,41 @@ def test_bad_algorithm_is_invalid_input(tmp_path):
     with pytest.raises(SystemExit) as exit_info:
         main([write(tmp_path, SYSTEM_30), "-a", "llf"])
     assert exit_info.value.code == 5
+
+# --- several cores -----------------------------------------------------------------
+
+def test_cores_are_checked_one_by_one(tmp_path, capsys):
+    # U = 0.1, 0.1, 0.4, 0.5, 0.7 with wf on 3 cores: [tau5], [tau2, tau4], [tau1, tau3]
+    path = write(tmp_path, "0;1;10;10\n0;1;10;10\n0;4;10;10\n0;5;10;10\n0;7;10;10\n")
+    assert main([path, "-a", "edf", "-m", "3", "-h", "wf"]) == 0
+    out = capsys.readouterr().out
+    assert "core 1 (tau5): schedulable" in out
+    assert "core 3 (tau1, tau3): schedulable" in out
+
+
+def test_empty_cores_are_skipped(tmp_path, capsys):
+    assert main([write(tmp_path, "0;1;4;4\n"), "-a", "rm", "-m", "4"]) == 0
+    assert "core 2" not in capsys.readouterr().out
+
+
+def test_partitioning_fails(tmp_path, capsys):
+    # du order 0.6, 0.5, 0.5, 0.4 on 2 cores: next fit cannot place 0.4
+    path = write(tmp_path, "0;5;10;10\n0;6;10;10\n0;4;10;10\n0;5;10;10\n")
+    assert main([path, "-a", "edf", "-m", "2", "-h", "nf"]) == 1
+    assert "partitioning failed" in capsys.readouterr().out
+
+
+def test_heuristic_changes_the_verdict(tmp_path, capsys):
+    # two tasks of U = 1/2: ff packs both on core 1, where RM misses (U = 1);
+    # wf puts one on each core
+    path = write(tmp_path, "0;2;4;4\n0;3;6;6\n")
+    assert main([path, "-a", "rm", "-m", "2", "-h", "ff"]) == 3
+    assert main([path, "-a", "rm", "-m", "2", "-h", "wf"]) == 0
+    assert "core 2 (tau2): schedulable" in capsys.readouterr().out
+
+
+def test_stops_at_the_first_failing_core(tmp_path, capsys):
+    # wf on 2 cores: core 1 gets tau1 (C > D, exit 3), core 2 is never printed
+    path = write(tmp_path, "0;3;2;10\n0;1;10;10\n")
+    assert main([path, "-a", "edf", "-m", "2", "-h", "wf"]) == 3
+    assert "core 2" not in capsys.readouterr().out

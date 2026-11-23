@@ -11,9 +11,11 @@ from rtsched.exit_codes import (
     INVALID_INPUT,
     NOT_SCHEDULABLE_ANALYSIS,
     NOT_SCHEDULABLE_SIMULATION,
+    PARTITION_FAILED,
     SCHEDULABLE,
     UNSUPPORTED,
 )
+from rtsched.partitioner import partition
 from rtsched.schedulability import check_schedulability
 from rtsched.schedulers import get_scheduler
 from rtsched.taskset_io import InvalidTaskFile, read_taskset
@@ -81,11 +83,21 @@ def main(argv=None) -> int:
     print(f"{len(taskset.tasks)} tasks, {taskset.describe()}, U = {float(taskset.utilization()):.3f}")
     print(f"algorithm {args.algorithm}, {args.cores} core(s), heuristic {args.heuristic}, sort {args.sort}")
 
-    if args.cores > 1:
-        # TODO (M5): partition the tasks, then check every core.
-        print("error: -m > 1 is not implemented yet", file=sys.stderr)
-        return INVALID_INPUT
+    if args.cores == 1:
+        cores = [taskset.tasks]  # one core: nothing to partition
+    else:
+        cores = partition(taskset.tasks, args.cores, args.heuristic, args.sort)
+        if cores is None:
+            print(f"partitioning failed: some task fits on no core ({args.heuristic}, {args.sort})")
+            return PARTITION_FAILED
 
-    code, reason = check_schedulability(taskset.tasks, get_scheduler(args.algorithm))
-    print(f"{VERDICTS[code]}: {reason}")
-    return code
+    scheduler = get_scheduler(args.algorithm)
+    for k, core_tasks in enumerate(cores):
+        if not core_tasks:
+            continue
+        code, reason = check_schedulability(core_tasks, scheduler)
+        names = ", ".join(f"tau{task.index + 1}" for task in core_tasks)
+        print(f"core {k + 1} ({names}): {VERDICTS[code]}: {reason}")
+        if code != SCHEDULABLE:
+            return code
+    return SCHEDULABLE
