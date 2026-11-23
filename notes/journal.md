@@ -193,3 +193,54 @@ Each entry: what was done, decisions and why, problems, next step.
 
 **Next**
 - M5: `partitioner.py`, `test_partitioner.py`, multi-core flow in the CLI.
+
+## 2026-11-23 — Session 6: M5 partitioner, M6 task set checks
+
+**Done**
+- M5: `rtsched/partitioner.py`, `tests/test_partitioner.py` (9 tests),
+  multi-core flow in `cli.main` and 5 multi-core CLI tests. Committed
+  during the session (`Add partitioner and multi-core flow`).
+- M6: `tasksets/custom/` (12 task sets, `expected.csv` with 39 rows),
+  `scripts/run_all.py`, `tests/test_custom.py`. 130 tests pass.
+- Checks on a scratch copy before giving each file: all 60 samples ×
+  rm/dm/edf × 2–4 cores × 4 heuristics × 2 orders (4,320 runs), no crash,
+  worst run 0.27 s; samples table in 0.7 s.
+
+**Decisions**
+- Heuristics as in the guide §7.1.1; capacity 1 per core (statement), not
+  RM's ln 2 bin size, because each core is then checked exactly. Ties to
+  the lowest core; NF never goes back (fails past the last core).
+- `-m 1` does not partition (user's choice, option A): U > 1 on one core
+  stays exit 3, and the one-core behaviour of M4 is unchanged.
+- Cores checked in order, the first code ≠ 0 is the exit code; empty cores
+  skipped; one output line per core.
+- Custom task sets with hand-derived codes, because the course samples have
+  no expected answers; the samples are only checked for consistency (EDF
+  schedules whatever RM/DM schedule, Th. 52).
+- All paths are relative (to the test file, or given as arguments), so the
+  teacher can run everything; the sample test is skipped when the folder is
+  missing.
+- Working-method exception (user's choice): Claude created the data files
+  in `tasksets/custom/` itself; the user still types all code.
+
+**Problems**
+- Two of Claude's hand-derived expected codes were wrong (caught by the
+  check before the files were handed over): `edf-constrained-miss` with
+  `-m 2 ff` is 4, not 0 (FF packs U = 1 on one core), and `next-fit-fails`
+  with `ff iu` is 1, not 0 (the iu order leaves 0.6 last). The code was
+  right; the CSV uses the correct values.
+- The user was unsure what M6 was for; explained the custom sets as an
+  answer key the samples lack.
+
+**Observations for the report**
+- Samples are consistent with the theory: EDF never worse than RM/DM, DM
+  never worse than RM on constrained sets.
+- `asynchronous/arbitrary/taskset-1` has D ≤ T for both tasks, so it is
+  classified as constrained (most specific type) and simulated (0), not
+  unsupported.
+- `asynchronous/constrained/taskset-2`: 4 under RM on one core, 0 with
+  `-m 2 -h wf`.
+
+**Next**
+- M7: bonus Gantt chart (design first), then M8: README, `package.py`,
+  report.

@@ -57,7 +57,8 @@ rt-scheduler/
 │   └── visualization.py     bonus Gantt chart
 ├── tasksets/custom/         own task sets + expected.csv
 ├── tests/                   test_parsing, test_analysis, test_feasibility,
-│                            test_simulator, test_partitioner, test_cli
+│                            test_simulator, test_schedulability,
+│                            test_partitioner, test_cli, test_custom
 ├── scripts/                 run_all.py (results table), package.py (zip)
 └── report/                  main.tex, figures/
 ```
@@ -123,7 +124,21 @@ of the interval is still checked. Stops at the first miss.
 Capacity 1 per core (the statement). BF = eligible core with the highest
 load, WF = lowest load, ties to the lowest core index. NF never returns to
 earlier cores. Cores are then checked in order; the run stops at the first
-core that is not schedulable.
+core that is not schedulable, and its code is the exit code. `-m 1` does not
+go through the partitioner (the whole set is the core), so U > 1 on one core
+stays exit 3. Empty cores are skipped. Output: one line per core,
+`core k (tau…): <verdict>: <reason>`.
+
+### Checking against task files
+
+`tasksets/custom/`: own small task sets whose exit code is derived by hand
+or from the guide, listed in `expected.csv`
+(file,algorithm,cores,heuristic,sort,expected). `scripts/run_all.py
+--check` runs it; `scripts/run_all.py <folder>` prints the code of every
+file × rm/dm/edf and a count per sub-folder (for the report). Both also run
+in pytest (`test_custom.py`); the sample check only tests consistency
+(EDF schedules whatever RM/DM schedule) and is skipped if the samples are
+not found.
 
 ### Choices beyond the statement
 
@@ -144,8 +159,9 @@ core that is not schedulable.
       messages (2026-11-20)
 - [x] M4 — Simulator + `schedulability.py` (uniprocessor complete)
       (2026-11-20)
-- [ ] M5 — Partitioner + multiprocessor flow
-- [ ] M6 — Custom task sets, `expected.csv`, `run_all.py` over the 60 samples
+- [x] M5 — Partitioner + multiprocessor flow (2026-11-23)
+- [x] M6 — Custom task sets, `expected.csv`, `run_all.py` over the 60 samples
+      (2026-11-23)
 - [ ] M7 — Bonus visualisation (`--plot`, extra flag)
 - [ ] M8 — Report (LaTeX) + `package.py` zip, final check against the
       statement
