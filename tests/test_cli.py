@@ -74,3 +74,31 @@ def test_stops_at_the_first_failing_core(tmp_path, capsys):
     path = write(tmp_path, "0;3;2;10\n0;1;10;10\n")
     assert main([path, "-a", "edf", "-m", "2", "-h", "wf"]) == 3
     assert "core 2" not in capsys.readouterr().out
+
+
+# --- bonus: Gantt chart --------------------------------------------------------------
+
+def test_plot_one_core(tmp_path):
+    png = tmp_path / "gantt.png"
+    assert main([write(tmp_path, SYSTEM_30), "-a", "rm", "--plot", str(png)]) == 0
+    assert png.is_file()
+
+
+def test_plot_one_file_per_core(tmp_path):
+    png = tmp_path / "gantt.png"
+    path = write(tmp_path, "0;2;4;4\n0;3;6;6\n")
+    assert main([path, "-a", "rm", "-m", "2", "-h", "wf", "--plot", str(png)]) == 0
+    assert (tmp_path / "gantt-core1.png").is_file()
+    assert (tmp_path / "gantt-core2.png").is_file()
+
+
+def test_plot_does_not_change_the_verdict(tmp_path):
+    # system 47 under RM: 4 with or without the chart (the chart has its own simulation)
+    path = write(tmp_path, SYSTEM_47)
+    assert main([path, "-a", "rm", "--plot", str(tmp_path / "gantt.png")]) == main([path, "-a", "rm"]) == 4
+
+
+def test_no_plot_when_unsupported(tmp_path):
+    png = tmp_path / "gantt.png"
+    assert main([write(tmp_path, "0;1;30;10\n3;1;5;10\n"), "-a", "dm", "--plot", str(png)]) == 2
+    assert not png.exists()

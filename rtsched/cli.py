@@ -6,6 +6,7 @@ Section 4.1 of the project description.
 
 import argparse
 import sys
+from pathlib import Path
 
 from rtsched.exit_codes import (
     INVALID_INPUT,
@@ -66,8 +67,16 @@ def parse_args(argv):
                         help="partitioning heuristic (default ff)")
     parser.add_argument("-s", dest="sort", choices=["du", "iu"], default="du",
                         help="sort by decreasing or increasing utilization (default du)")
+    parser.add_argument("--plot", metavar="FILE", help="bonus: save a Gantt chart of each core to FILE (PNG)")
     parser.add_argument("--help", action="help", help="show this help and exit")
     return parser.parse_args(argv)
+
+def gantt_path(plot: str, core: int, cores: int) -> str:
+    """FILE itself for one core; FILE-coreK.png for core K of several."""
+    if cores == 1:
+        return plot
+    path = Path(plot)
+    return str(path.with_name(f"{path.stem}-core{core + 1}{path.suffix}"))
 
 
 def main(argv=None) -> int:
@@ -98,6 +107,11 @@ def main(argv=None) -> int:
         code, reason = check_schedulability(core_tasks, scheduler)
         names = ", ".join(f"tau{task.index + 1}" for task in core_tasks)
         print(f"core {k + 1} ({names}): {VERDICTS[code]}: {reason}")
+        if args.plot and code != UNSUPPORTED:
+            from rtsched.visualization import plot_core  # matplotlib is only needed with --plot
+            path = gantt_path(args.plot, k, len(cores))
+            plot_core(core_tasks, scheduler, path, f"{Path(args.task_file).name}, core {k + 1}")
+            print(f"  Gantt chart saved to {path}")
         if code != SCHEDULABLE:
             return code
     return SCHEDULABLE

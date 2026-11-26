@@ -10,13 +10,17 @@ from rtsched.model import Job, Task
 from rtsched.schedulers import Scheduler
 
 
-def simulate(tasks: list[Task], scheduler: Scheduler, start: int, end: int) -> Job | None:
+def simulate(tasks: list[Task], scheduler: Scheduler, start: int, end: int, trace: list | None = None) -> Job | None:
     """Simulate the jobs released in [start, end) and return the first job
     that misses its deadline, or None if every deadline is met.
 
     Jobs released before `end` are followed until they complete, so a
     deadline after `end` is still checked. The run stops at the first miss.
     A job finishing exactly at its deadline meets it.
+
+    If `trace` is a list, every stretch of execution is appended to it as
+    (task index, job release, start, end), for the Gantt chart. It does not
+    change the result.
 
     Ends: time strictly increases at each step (every event is later than
     now), only finitely many jobs are released before `end`, and each has
@@ -51,6 +55,8 @@ def simulate(tasks: list[Task], scheduler: Scheduler, start: int, end: int) -> J
         job = scheduler.pick(ready)
         next_t = min([t + job.remaining] + future + [j.deadline for j in ready]) # next_t is the time of the next event: either the job finishes (t + job.remaining),
                                                                                  # or the next release (min(future)), or a deadline of a ready job (min(j.deadline for j in ready)).
+        if trace is not None:
+            trace.append((job.task.index, job.release, t, next_t)) # python list are passed by reference, so the appends are visible outside the function
         job.remaining -= next_t - t
         if job.remaining == 0:
             ready.remove(job)
