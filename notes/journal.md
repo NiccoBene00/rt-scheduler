@@ -244,3 +244,40 @@ Each entry: what was done, decisions and why, problems, next step.
 **Next**
 - M7: bonus Gantt chart (design first), then M8: README, `package.py`,
   report.
+
+## 2026-11-26 — Session 7: M7 Gantt chart bonus
+
+**Done**
+- `simulate` got an optional `trace` list; `rtsched/visualization.py`
+  (`drawing_window`, `plot_core`); `--plot FILE` and `gantt_path` in the
+  CLI; 4 plot tests. 134 tests pass. Committed and pushed during the
+  session (`Add Gantt chart bonus (--plot)`).
+- Charts rendered on a scratch copy and checked by eye before the file
+  was given; the user checked system 30-d14 and `full-utilization` with
+  `-m 2 -h wf`.
+
+**Decisions**
+- With `--plot`, cores decided without simulation (RTA, Cor. 54) are also
+  simulated, only for the chart: otherwise most sets (all implicit ones)
+  would never get a chart, and the chart then shows the analysis result
+  (e.g. τ3 finishing at r_3 = 15). The verdict still comes from
+  `check_schedulability`; unsupported cores get no chart (no interval,
+  "terminate early").
+- `trace` as an optional list argument filled by the simulator, so
+  `simulate` keeps its return value and no caller changes.
+- Window = feasibility interval cut to 200 units; [0, 200) when U > 1
+  (`busy_period` raises `ValueError`). A miss ends the chart at the missed
+  deadline.
+- PNG file, `Agg` backend (no window), so it works headless and gives
+  report figures; one file per core (`FILE-coreK.png`).
+- matplotlib imported inside the `--plot` branch, so the program runs
+  without it.
+- Thin black outline on each stretch, so two jobs of one task back to back
+  are visible (arbitrary deadlines).
+
+**Problems**
+- The user asked to push M6, which was already pushed at the session 6
+  close; clarified that the open work was M7.
+
+**Next**
+- M8: README, `package.py`, report. Agree first who writes the prose.

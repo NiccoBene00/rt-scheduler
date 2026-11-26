@@ -140,6 +140,16 @@ in pytest (`test_custom.py`); the sample check only tests consistency
 (EDF schedules whatever RM/DM schedule) and is skipped if the samples are
 not found.
 
+### Gantt chart (bonus)
+
+`--plot FILE` saves one PNG per non-empty core (`FILE-coreK.png` with
+several cores), drawn from a separate simulation with `simulate(...,
+trace=[])`, so the verdict never changes. Cores decided without simulation
+are simulated too, only for the chart; unsupported cores get none. Window:
+the feasibility interval cut to 200 units, [0, 200) when U > 1 (no busy
+period). Bars per execution stretch, triangles at releases, red cross at the
+first miss. matplotlib is imported only with `--plot`.
+
 ### Choices beyond the statement
 
 - Invalid input (missing file, malformed line, non-positive WCET or period,
@@ -162,7 +172,7 @@ not found.
 - [x] M5 — Partitioner + multiprocessor flow (2026-11-23)
 - [x] M6 — Custom task sets, `expected.csv`, `run_all.py` over the 60 samples
       (2026-11-23)
-- [ ] M7 — Bonus visualisation (`--plot`, extra flag)
+- [x] M7 — Bonus visualisation (`--plot`, extra flag) (2026-11-26)
 - [ ] M8 — Report (LaTeX) + `package.py` zip, final check against the
       statement
 
